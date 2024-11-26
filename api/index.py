@@ -54,3 +54,32 @@ async def resize_image(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
+@app.post("/api/grayscale")
+async def make_grayscale(request: Request):
+    """
+    Expects request object
+    {
+        "image": base64
+    }
+
+    Convert image to grayscale
+
+    returns response
+    {
+        "image": base64
+    }
+    """
+    try:
+        body = await request.json()
+        image_b64 = body.get("image")
+       
+        img = image.base64_to_rgb_image(image_b64)
+
+        new_img = image.convert_to_grayscale(img)
+        
+        new_img_b64 = image.rgb_image_to_base64(new_img)
+
+        return {"image": new_img_b64}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
