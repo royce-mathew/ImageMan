@@ -1,8 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
-from PIL import Image
-from base64 import b64decode, b64encode
-import numpy as np
-import cv2
+import image
 
 ### Create FastAPI instance with custom docs and openapi url
 app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
@@ -34,22 +31,26 @@ async def resize_image(request: Request):
     """
     try:
         body = await request.json()
-        image_b64 = body["image"]
+        image_b64 = body.get("image")
+        height = int(body.get("height")) if body.get("height") else None
+        width = int(body.get("width")) if body.get("width") else None
+        aspect_ratio = bool(body.get("aspect_ratio")) if body.get("aspect_ratio") else True
+
+        img = image.base64_to_rgb_image(image_b64)
+
+        if height is None and width is None:
+            raise HTTPException(status_code=400, detail="Both width and height must be provided.")
+        if height is None:
+            new_img = image.resize_image(img,height=height,aspect_ratio=aspect_ratio)
+        if width is None:
+            new_img = image.resize_image(img,width=width,aspect_ratio=aspect_ratio)
+        else:
+            new_img = image.resize_image(img,width=width,height=height,aspect_ratio=aspect_ratio)
+        
+        new_img_b64 = image.rgb_image_to_base64(new_img)
+
+        return {"image": new_img_b64}
         
     except Exception as e:
-        raise HTTPException
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
-def base64_to_rgb_image(b64):
-    image_data = b64decode(b64)
-    np_data = np.frombuffer(image_data, np.uint8)
-    img_bgr = cv2.imdecode(np_data, np.uint8)
-    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-
-    return img_rgb
-
-def rgb_image_to_base64(img_rgb):
-    img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
-    _, img_enc = cv2.imencode('.png', img_bgr)
-    img_b64 = b64encode(img_enc).decode('utf-8')
-
-    return img_b64
