@@ -10,12 +10,34 @@ image_store = None
 def hello_fast_api():
     return {"message": "Hello from FastAPI"}
 
+@app.post("/api/upload")
+async def upload_image(request: Request):
+    """
+    Uploads image to backend and puts it in image store
+    Request object
+    {
+        image: base64
+    }
+    Response object
+    {
+        success: True
+    }
+    """
+    try:
+        global image_store
+        body = await request.json()
+        b64 = body.get("image")
+
+        img = image.base64_to_rgb_image(b64)
+        image_store = image.Image(img)
+    except Exception as e:
+        raise HTTPException(status_code=400,detail=f"Error uploading image to the server: {str(e)}")
+
 @app.post("/api/resize")
 async def resize_image(request: Request):
     """
     Expected request object:
     {
-    image: base64,
     height: int,
     width: int,
     aspect_ratio: True
@@ -27,6 +49,7 @@ async def resize_image(request: Request):
 
     {
     image: base64
+    success: True
     }
     """
     try:
