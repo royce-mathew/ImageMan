@@ -6,11 +6,11 @@ app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
 
 image_store = None
 
-@app.get("/api/")
+@app.get("/api/py")
 def hello_fast_api():
     return {"message": "Hello from FastAPI"}
 
-@app.post("/api/resize")
+@app.post("/api/py/resize")
 async def resize_image(request: Request):
     """
     Expected request object:
@@ -54,7 +54,7 @@ async def resize_image(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
-@app.post("/api/grayscale")
+@app.post("/api/py/grayscale")
 async def make_grayscale(request: Request):
     """
     Expects request object
@@ -72,7 +72,7 @@ async def make_grayscale(request: Request):
     try:
         body = await request.json()
         image_b64 = body.get("image")
-       
+        
         img = image.base64_to_rgb_image(image_b64)
 
         new_img = image.convert_to_grayscale(img)

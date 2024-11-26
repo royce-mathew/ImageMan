@@ -61,7 +61,7 @@ def base64_to_rgb_image(b64):
     """
     image_data = b64decode(b64)
     np_data = np.frombuffer(image_data, np.uint8)
-    img_bgr = cv2.imdecode(np_data, np.uint8)
+    img_bgr = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
 
     return img_rgb
