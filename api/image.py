@@ -1,10 +1,14 @@
 import cv2
 import numpy as np
 class Image:
-    def __init__(self, numpy_array, layers={}):
+    def __init__(self, numpy_array, layers=None):
         self.image = numpy_array
         if not layers:
             self.layers["layer1"] = self.image
+
+    def __array__(self, dtype=None):
+        return self.image.astype(dtype) if dtype else self.image
+    
     def add_layer(self, layer):
         self.layers.update(layer)
 
@@ -20,3 +24,6 @@ def crop_image(image, mask):
     mask = cv2.convertScaleAbs(mask) # ensure mask is binary (0 or 1) and the shape is (rows, cols) no channels
     cropped = cv2.bitwise_and(image, image, mask=mask)
     return cv2.convertScaleAbs(cropped)
+
+def resize_image(image, height, width, aspect_ratio=True):
+    
