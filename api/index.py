@@ -54,22 +54,23 @@ async def resize_image(request: Request):
     """
     try:
         body = await request.json()
-        image_b64 = body.get("image")
+        # image_b64 = body.get("image")
         height = int(body.get("height")) if body.get("height") else None
         width = int(body.get("width")) if body.get("width") else None
         aspect_ratio = bool(body.get("aspect_ratio")) if body.get("aspect_ratio") else True
 
-        img = image.base64_to_rgb_image(image_b64)
+        # img = image.base64_to_rgb_image(image_b64)
 
         if height is None and width is None:
             raise HTTPException(status_code=400, detail="Both width and height must be provided.")
         if height is None:
-            new_img = image.resize_image(img,height=height,aspect_ratio=aspect_ratio)
+            new_img = image.resize_image(image_store,height=height,aspect_ratio=aspect_ratio)
         if width is None:
-            new_img = image.resize_image(img,width=width,aspect_ratio=aspect_ratio)
+            new_img = image.resize_image(image_store,width=width,aspect_ratio=aspect_ratio)
         else:
-            new_img = image.resize_image(img,width=width,height=height,aspect_ratio=aspect_ratio)
+            new_img = image.resize_image(image_store,width=width,height=height,aspect_ratio=aspect_ratio)
         
+        image_store.apply_changes(new_img)
         new_img_b64 = image.rgb_image_to_base64(new_img)
 
         return {"image": new_img_b64}
@@ -93,13 +94,14 @@ async def make_grayscale(request: Request):
     }
     """
     try:
-        body = await request.json()
-        image_b64 = body.get("image")
+        # body = await request.json()
+        # image_b64 = body.get("image")
        
-        img = image.base64_to_rgb_image(image_b64)
+        # img = image.base64_to_rgb_image(image_b64)
 
-        new_img = image.convert_to_grayscale(img)
+        new_img = image.convert_to_grayscale(image_store)
         
+        image_store.apply_changes(new_img)
         new_img_b64 = image.rgb_image_to_base64(new_img)
 
         return {"image": new_img_b64}
