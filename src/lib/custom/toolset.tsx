@@ -7,19 +7,19 @@ interface ToolsetProps {
 }
 
 const Toolset: React.FC<ToolsetProps> = ({ onButtonPressed }) => {
-    const handleButtonClick = (ButtonName: string) => {
+    const handleButtonClick = (ButtonName: string, params?: {}) => {
         onButtonPressed(ButtonName);
     };
 
     return (
         <div className="grid space-y-2 place-content-start">
-                <Button className="tool" size='icon' onClick={() => handleButtonClick('Rotate')}><RotateCwIcon/></Button>
-                <Button className="tool" size='icon' onClick={() => handleButtonClick('Crop')}><CropIcon/></Button>
-                <Button className="tool" size='icon' onClick={() => handleButtonClick('Draw')}>Draw</Button>
-                <Button className="tool" size='icon' onClick={() => handleButtonClick('Text')}>Text</Button>
-                <Button className="tool" size='icon' onClick={() => handleButtonClick('Shapes')}>Shapes</Button>
-                <Button className="tool" size='icon' onClick={() => handleButtonClick('Filters')}>Filters</Button>
-            </div>
+            <Button className="tool" size='icon' onClick={() => handleButtonClick('Rotate')}><RotateCwIcon/></Button>
+            <Button className="tool" size='icon' onClick={() => handleButtonClick('Crop')}><CropIcon/></Button>
+            <Button className="tool" size='icon' onClick={() => handleButtonClick('Draw')}>Draw</Button>
+            <Button className="tool" size='icon' onClick={() => handleButtonClick('Text')}>Text</Button>
+            <Button className="tool" size='icon' onClick={() => handleButtonClick('Shapes')}>Shapes</Button>
+            <Button className="tool" size='icon' onClick={() => handleButtonClick('Filters')}>Filters</Button>
+        </div>
     );
 };
 
