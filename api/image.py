@@ -224,13 +224,29 @@ def create_gaussian_xy(xc, yc, half_width):
 def g(x_or_y, sigma):
     input = -1 * ((x_or_y ** 2)/(2 * sigma ** 2))
     const = 1 / (np.sqrt(2 * np.pi) * sigma)
+    
     return const * np.exp(input)
 
-def adjust_saturation():
-    pass
+def adjust_saturation(image_rgb, saturation_value):
+    image_hsv = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2HSV).astype(np.float32)
+    image_hsv[:,:,1] = image_hsv[:,:,1].astype(np.int16) + saturation_value
+    image_rgb = cv2.cvtColor(cv2.convertScaleAbs(image_hsv),cv2.COLOR_HSV2RGB)
+    
+    return image_rgb
 
-def change_contrast():
-    pass
+def change_contrast(image, value):
+    value = value / 1000
+    image = image.astype(np.float32)
+    constrast_image = logistics_function(image, alpha=value)
 
-def change_color_temperature():
-    pass
+    return cv2.convertScaleAbs(constrast_image)
+    
+def logistics_function(x, alpha, beta=127.5):
+    return 255 / (1 + np.exp(-alpha*(x - beta)))
+
+def change_tone(image, tone_value):
+    image = image.astype(np.float32)
+    image[:,:,0] = image[:,:,0] + tone_value
+    image[:,:,2] = image[:,:,2] - tone_value
+
+    return cv2.convertScaleAbs(image)
