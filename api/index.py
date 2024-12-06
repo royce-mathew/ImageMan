@@ -80,7 +80,7 @@ async def resize_image(request: Request):
 
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
-@app.get("/api/py/grayscale")
+@app.post("/api/py/grayscale")
 async def make_grayscale():
     """
     Convert image to grayscale
@@ -94,7 +94,7 @@ async def make_grayscale():
 
     # image.plt.imshow(image_store.image)
     # image.plt.show()
-    # new_img = image.convert_to_grayscale(image_store.image)
+    new_img = image.convert_to_grayscale(image_store.image)
     # image.plt.imshow(new_img)
     # image.plt.show()
     image_store.apply_changes(new_img)
@@ -105,7 +105,7 @@ async def make_grayscale():
 
 @server_exception_handler(detail=f"Error downloading image from the server:")
 @validate_image
-@app.get("/api/py/download")
+@app.post("/api/py/download")
 async def download_image():
     """
     downloads the current image on the backend
@@ -115,7 +115,7 @@ async def download_image():
 
 @server_exception_handler(detail=f"Error in undo state:") 
 @validate_image
-@app.get("/api/py/undo")
+@app.post("/api/py/undo")
 async def undo():
     """
     undo an image to a previous state
@@ -127,7 +127,7 @@ async def undo():
 
 @server_exception_handler(detail=f"Error in redo state:") 
 @validate_image
-@app.get("/api/py/redo")
+@app.post("/api/py/redo")
 async def redo():
     """
     redo an image to a previous state before undo
