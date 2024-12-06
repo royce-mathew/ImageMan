@@ -92,11 +92,11 @@ async def make_grayscale():
     }
     """
 
-    image.plt.imshow(image_store.image)
-    image.plt.show()
-    new_img = image.convert_to_grayscale(image_store.image)
-    image.plt.imshow(new_img)
-    image.plt.show()
+    # image.plt.imshow(image_store.image)
+    # image.plt.show()
+    # new_img = image.convert_to_grayscale(image_store.image)
+    # image.plt.imshow(new_img)
+    # image.plt.show()
     image_store.apply_changes(new_img)
     new_img_b64 = image.rgb_image_to_base64(new_img)
 
