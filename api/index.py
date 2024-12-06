@@ -220,3 +220,69 @@ async def gaussian_blur(request: Request):
     gauss_b64 = image.rgb_image_to_base64(gauss_image)
     
     return {"image": gauss_b64, "success": True}
+
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
+@app.post("/api/py/saturation")
+async def adjust_saturation(request: Request):
+    """
+    Changes image saturation (0 value will give no change in saturation)
+
+    Request
+    {
+        saturation_value: int (-25,25)
+    }
+    """
+    body = await request.json()
+    saturation_value = int(body.get("saturation_value"))
+
+    saturated_image = image.adjust_saturation(image_store.image, saturation_value)
+
+    image_store.apply_changes(saturated_image)
+    saturation_b64 = image.rgb_image_to_base64(saturated_image)
+    
+    return {"image": saturation_b64, "success": True}
+
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
+@app.post("/api/py/contrast")
+async def change_contrast(request: Request):
+    """
+    Adjusts the contrast of the image, unknown default as changing constrast is irreversible 
+
+    Request
+    {
+        contrast_value: int (0 to 50)
+    }
+    """
+    body = await request.json()
+    constrast_val = int(body.get("constrast_value"))
+
+    constrast_image = image.change_contrast(image_store.image, constrast_val)
+
+    image_store.apply_changes(constrast_image)
+    constrast_b64 = image.rgb_image_to_base64(constrast_image)
+    
+    return {"image": constrast_b64, "success": True}
+
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
+@app.post("/api/py/tone")
+async def change_tone(request: Request):
+    """
+    Changes color tones from warm to cold by adding to red values and substracting blue values
+
+    Request
+    {
+        tone_value: int (-50, 50) 0 will not change tone
+    }
+    """
+    body = await request.json()
+    tone_value = int(body.get("tone_value"))
+
+    tone_image = image.change_tone(image_store.image, tone_value)
+
+    image_store.apply_changes(tone_image)
+    tone_b64 = image.rgb_image_to_base64(tone_image)
+    
+    return {"image": tone_b64, "success": True}
