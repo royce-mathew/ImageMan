@@ -5,15 +5,18 @@ from base64 import b64decode, b64encode
 import matplotlib.pyplot as plt
 
 class Image:
-    __array_interface__ = {'typestr': '|i1', 'version': 1}
     def __init__(self, numpy_array, layers=None):
+        '''
+        self.image is current image
+        layers is a dictionary with "key": image, image is ndarray
+        '''
         if numpy_array is None:
             raise ValueError("Input array cannot be None.")
         if not isinstance(numpy_array, np.ndarray):
             raise TypeError("Input must be a NumPy ndarray.")
         self.image = numpy_array
         self.layers = layers if layers is not None else {"layer1": self.image.copy()}
-        print("assigned image to object")
+
         if not self.layers:
             raise ValueError("Layers dictionary cannot be empty.")  
 
@@ -22,11 +25,12 @@ class Image:
         self.undo_stack = []
         self.redo_stack = []
 
-    def __array__(self, dtype=None):
+    def __array__(self, dtype=None): # doesn't work for numpy operation call Image.image for that
             return self.image.astype(dtype) if dtype else self.image
 
     def __repr__(self):
         return f"Image({repr(self.image)})"
+
     def __str__(self):
         return f"{self.image}"
 

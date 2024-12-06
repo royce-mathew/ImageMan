@@ -27,14 +27,12 @@ async def upload_image(request: Request):
     try:
         global image_store
         body = await request.json()
-        print(f"body is {body}")
+
         b64 = body.get("image")
-        print(f"string is {b64}")
+
         img = image.base64_to_rgb_image(b64)
-        # print(f"np image is {img}")
+
         image_store = image.Image(img)
-        print("image store is:")
-        print(image.np.mean(image_store.image))
 
         return {"success": True}
     except Exception as e:
@@ -71,11 +69,11 @@ async def resize_image(request: Request):
         if height is None and width is None:
             raise HTTPException(status_code=400, detail="Both width and height must be provided.")
         if height is None:
-            new_img = image.resize_image(image_store,height=height,aspect_ratio=aspect_ratio)
+            new_img = image.resize_image(image_store.image,height=height,aspect_ratio=aspect_ratio)
         if width is None:
-            new_img = image.resize_image(image_store,width=width,aspect_ratio=aspect_ratio)
+            new_img = image.resize_image(image_store.image,width=width,aspect_ratio=aspect_ratio)
         else:
-            new_img = image.resize_image(image_store,width=width,height=height,aspect_ratio=aspect_ratio)
+            new_img = image.resize_image(image_store.image,width=width,height=height,aspect_ratio=aspect_ratio)
         
         image_store.apply_changes(new_img)
         new_img_b64 = image.rgb_image_to_base64(new_img)
@@ -107,7 +105,7 @@ async def make_grayscale(request: Request):
        
         # img = image.base64_to_rgb_image(image_b64)
 
-        new_img = image.convert_to_grayscale(image_store)
+        new_img = image.convert_to_grayscale(image_store.image)
         
         image_store.apply_changes(new_img)
         new_img_b64 = image.rgb_image_to_base64(new_img)
