@@ -36,9 +36,10 @@ async def upload_image(request: Request):
 
         return {"success": True}
 
-@app.post("/api/py/resize")
+
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
+@app.post("/api/py/resize")
 async def resize_image(request: Request):
     """
     Expected request object:
@@ -101,15 +102,17 @@ async def make_grayscale():
 
     return {"image": new_img_b64, "success": True}
 
-@app.get("/api/py/download")
+
 @server_exception_handler(detail=f"Error downloading image from the server:")
 @validate_image
+@app.get("/api/py/download")
 async def download_image():
     return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
 
-@app.get("/api/py/undo")
+
 @server_exception_handler(detail=f"Error in undo state:") 
 @validate_image
+@app.get("/api/py/undo")
 async def undo():
     """
     undo an image to a previous state
@@ -118,9 +121,10 @@ async def undo():
         image_store.undo()
     return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
 
-@app.get("/api/py/redo")
+
 @server_exception_handler(detail=f"Error in redo state:") 
 @validate_image
+@app.get("/api/py/redo")
 async def redo():
     """
     redo an image to a previous state before undo
