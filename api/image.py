@@ -250,3 +250,27 @@ def change_tone(image, tone_value):
     image[:,:,2] = image[:,:,2] - tone_value
 
     return cv2.convertScaleAbs(image)
+
+def make_sepia(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    gray = gray.astype(np.float32) / 255
+
+    sepia = np.ones_like(image,dtype=np.float32)
+
+    sepia[:,:,0] *= 255 * gray
+    sepia[:,:,1] *= 204 * gray
+    sepia[:,:,2] *= 153 * gray
+
+    return cv2.convertScaleAbs(sepia)
+
+def make_ghost(image): # very cool filter, inverts sepia to create a ghostly image
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    gray = gray.astype(np.float32) / 255
+
+    ghost = np.ones_like(image,dtype=np.float32)
+
+    ghost[:,:,0] *= 255 * gray
+    ghost[:,:,1] *= 204 * gray
+    ghost[:,:,2] *= 153 * gray
+
+    return cv2.convertScaleAbs(ghost)

@@ -83,10 +83,15 @@ async def resize_image(request: Request):
 
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
-@app.post("/api/py/grayscale")
-async def make_grayscale():
+@app.post("/api/py/filter")
+async def make_filter(request: Request):
     """
-    Convert image to grayscale
+    Convert image to a filter image of choice
+
+    Request object
+    {
+        filter: string of type "grayscale" | "sepia" | "ghost"
+    }
 
     returns response
     {
@@ -97,7 +102,16 @@ async def make_grayscale():
 
     # image.plt.imshow(image_store.image)
     # image.plt.show()
-    new_img = image.convert_to_grayscale(image_store.image)
+    body = await request.json()
+    filter = body.get("filter")
+
+    if filter == "sepia":
+        new_img = image.make_sepia(image_store.image)
+    elif filter == "ghost":
+        new_img = image.make_ghost(image_store.image)
+    else:
+        new_img = image.convert_to_grayscale(image_store.image)
+        
     # image.plt.imshow(new_img)
     # image.plt.show()
     image_store.apply_changes(new_img)
