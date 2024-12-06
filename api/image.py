@@ -72,6 +72,10 @@ class Image:
         self.undo_stack.append((self.image.copy(), {k: v.copy() for k, v in self.layers.items()}))
         
         self.image, self.layers = self.redo_stack.pop()
+        
+    def get_states(self):
+        print(self.redo_stack)
+        return {"undo": len(self.undo_stack), "redo": len(self.redo_stack)}
 
 def apply_selection(image, mask, function, *args, invert=False, **kwargs):
     mask = mask / 255

@@ -135,3 +135,16 @@ async def redo():
     if image_store is not None:
         image_store.redo()
     return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
+
+
+@server_exception_handler(detail=f"Error in getting image states")
+@validate_image
+@app.get("/api/py/states")
+async def get_states():
+    """
+    Get the current states of the image
+    """
+    if image_store is not None:
+        return {"states": image_store.get_states(), "success": True}
+    else:
+        return {"states": { "undo": 0, "redo": 0 }, "success": False}
