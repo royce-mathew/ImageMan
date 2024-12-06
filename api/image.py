@@ -145,8 +145,17 @@ def convert_to_grayscale(img_rgb):
         
     return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY) 
 
-def rotate_image():
-    pass
+
+def rotate_image(image, angle=90, center=None):
+    (h, w) = image.shape[:2]
+
+    if center == None:
+        center = (w // 2, h // 2)
+    
+    rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+    rotated_image = cv2.warpAffine(image, rotation_matrix, (w, h))
+
+    return rotated_image
 
 def white_balance(image,mode='gray'):
     if "white" == mode:
@@ -164,7 +173,7 @@ def white_balance(image,mode='gray'):
         image[:,:,2] *= scale_b
 
         return cv2.convertScaleAbs(image)
-        
+
     image = image.astype(np.float32)
     avg_r = np.mean(image[:,:,0])
     avg_g = np.mean(image[:,:,1])
