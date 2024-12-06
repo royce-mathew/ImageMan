@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 import api.image as image
+from api.utils import validate_image, server_exception_handler
 
 ### Create FastAPI instance with custom docs and openapi url
 app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
@@ -12,6 +13,7 @@ def hello_fast_api():
 
 
 @app.post("/api/py/upload")
+@server_exception_handler(status_code=400,detail=f"Error uploading image to the server:")
 async def upload_image(request: Request):
     """
     Uploads image to backend and puts it in image store
@@ -24,21 +26,21 @@ async def upload_image(request: Request):
         success: True
     }
     """
-    try:
-        global image_store
-        body = await request.json()
+    global image_store
+    body = await request.json()
 
-        b64 = body.get("image")
+    b64 = body.get("image")
 
-        img = image.base64_to_rgb_image(b64)
+    img = image.base64_to_rgb_image(b64)
 
-        image_store = image.Image(img)
+    image_store = image.Image(img)
 
-        return {"success": True}
-    except Exception as e:
-        raise HTTPException(status_code=400,detail=f"Error uploading image to the server: {str(e)}")
+    return {"success": True}
+
 
 @app.post("/api/py/resize")
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
 async def resize_image(request: Request):
     """
     Expected request object:
@@ -57,35 +59,29 @@ async def resize_image(request: Request):
     success: Bool
     }
     """
-    try:
-        if image_store.image is None:
-            return {"success":False, "image": None}
-        body = await request.json()
-        # image_b64 = body.get("image")
-        height = int(body.get("height")) if body.get("height") else None
-        width = int(body.get("width")) if body.get("width") else None
-        aspect_ratio = bool(body.get("aspect_ratio")) if body.get("aspect_ratio") else True
+    body = await request.json()
+    height = int(body.get("height")) if body.get("height") else None
+    width = int(body.get("width")) if body.get("width") else None
+    aspect_ratio = bool(body.get("aspect_ratio")) if body.get("aspect_ratio") else True
 
-        # img = image.base64_to_rgb_image(image_b64)
+    if height is None and width is None:
+        raise HTTPException(status_code=400, detail="Both width and height must be provided.")
+    if height is None:
+        new_img = image.resize_image(image_store.image,height=height,aspect_ratio=aspect_ratio)
+    if width is None:
+        new_img = image.resize_image(image_store.image,width=width,aspect_ratio=aspect_ratio)
+    else:
+        new_img = image.resize_image(image_store.image,width=width,height=height,aspect_ratio=aspect_ratio)
+    
+    image_store.apply_changes(new_img)
+    new_img_b64 = image.rgb_image_to_base64(new_img)
 
-        if height is None and width is None:
-            raise HTTPException(status_code=400, detail="Both width and height must be provided.")
-        if height is None:
-            new_img = image.resize_image(image_store.image,height=height,aspect_ratio=aspect_ratio)
-        if width is None:
-            new_img = image.resize_image(image_store.image,width=width,aspect_ratio=aspect_ratio)
-        else:
-            new_img = image.resize_image(image_store.image,width=width,height=height,aspect_ratio=aspect_ratio)
-        
-        image_store.apply_changes(new_img)
-        new_img_b64 = image.rgb_image_to_base64(new_img)
+    return {"image": new_img_b64, "success": True}
 
-        return {"image": new_img_b64, "success": True}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 @app.get("/api/py/grayscale")
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
 async def make_grayscale():
     """
     Convert image to grayscale
@@ -96,28 +92,35 @@ async def make_grayscale():
         "success": bool
     }
     """
-    if image_store is None:
-        return {"success": False, "image": "None"}
 
-    try:
-        image.plt.imshow(image_store.image)
-        image.plt.show()
-        new_img = image.convert_to_grayscale(image_store.image)
-        image.plt.imshow(new_img)
-        image.plt.show()
-        image_store.apply_changes(new_img)
-        new_img_b64 = image.rgb_image_to_base64(new_img)
+    image.plt.imshow(image_store.image)
+    image.plt.show()
+    new_img = image.convert_to_grayscale(image_store.image)
+    image.plt.imshow(new_img)
+    image.plt.show()
+    image_store.apply_changes(new_img)
+    new_img_b64 = image.rgb_image_to_base64(new_img)
 
-        return {"image": new_img_b64, "success": True}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+    return {"image": new_img_b64, "success": True}
 
 @app.get("/api/py/download")
+@server_exception_handler(detail=f"Error downloading image from the server:")
+@validate_image
 async def download_image():
-    if image_store is None:
-        return {"success": False, "image": "None"}
-    try:
-        return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
-    except Exception as e:
-        raise HTTPException(status_code=500,detail=f"Error uploading image to the server: {str(e)}")
+    return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
+
+@app.get("/api/py/undo")
+@server_exception_handler(detail=f"Error in undo state:") 
+@validate_image
+async def undo():
+    if image_store is not None:
+        image_store.undo()
+    return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
+
+@app.get("/api/py/redo")
+@server_exception_handler(detail=f"Error in redo state:") 
+@validate_image
+async def redo():
+    if image_store is not None:
+        image_store.redo()
+    return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
