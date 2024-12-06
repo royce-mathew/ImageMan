@@ -27,10 +27,16 @@ async def upload_image(request: Request):
     try:
         global image_store
         body = await request.json()
+        print(f"body is {body}")
         b64 = body.get("image")
-
+        print(f"string is {b64}")
         img = image.base64_to_rgb_image(b64)
+        # print(f"np image is {img}")
         image_store = image.Image(img)
+        print("image store is:")
+        print(image.np.mean(image_store.image))
+
+        return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=400,detail=f"Error uploading image to the server: {str(e)}")
 

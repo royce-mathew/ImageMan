@@ -1,20 +1,35 @@
 import cv2
 import numpy as np
-from PIL import Image
+# from PIL import Image
 from base64 import b64decode, b64encode
+import matplotlib.pyplot as plt
 
 class Image:
+    __array_interface__ = {'typestr': '|i1', 'version': 1}
     def __init__(self, numpy_array, layers=None):
+        if numpy_array is None:
+            raise ValueError("Input array cannot be None.")
+        if not isinstance(numpy_array, np.ndarray):
+            raise TypeError("Input must be a NumPy ndarray.")
         self.image = numpy_array
         self.layers = layers if layers is not None else {"layer1": self.image.copy()}
-        self.layer_count = 1
-        self.current_layer = next(iter(layers))
+        print("assigned image to object")
+        if not self.layers:
+            raise ValueError("Layers dictionary cannot be empty.")  
+
+        self.layer_count = len(self.layers)
+        self.current_layer = next(iter(self.layers))
         self.undo_stack = []
         self.redo_stack = []
 
     def __array__(self, dtype=None):
-        return self.image.astype(dtype) if dtype else self.image
-    
+            return self.image.astype(dtype) if dtype else self.image
+
+    def __repr__(self):
+        return f"Image({repr(self.image)})"
+    def __str__(self):
+        return f"{self.image}"
+
     def add_layer(self, layer, layer_name=None):
         self.layer_count += 1
         if not layer_name:
@@ -101,7 +116,8 @@ def base64_to_rgb_image(b64):
     np_data = np.frombuffer(image_data, np.uint8)
     img_bgr = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-
+    plt.imshow(img_rgb)
+    plt.show()
     return img_rgb
 
 def rgb_image_to_base64(img_rgb):
