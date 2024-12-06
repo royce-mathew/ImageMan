@@ -3,6 +3,7 @@ import numpy as np
 # from PIL import Image
 from base64 import b64decode, b64encode
 import matplotlib.pyplot as plt
+from fastapi import HTTPException
 
 class Image:
     def __init__(self, numpy_array, layers=None):
@@ -61,13 +62,13 @@ class Image:
     
     def undo(self):
         if not self.undo_stack:
-            raise ValueError("Nothing to undo")
+            raise HTTPException(400, detail={"message":"Nothing to undo", "success":False})
         self.redo_stack.append((self.image.copy(), {k: v.copy() for k, v in self.layers.items()}))
         self.image, self.layers = self.undo_stack.pop()
     
     def redo(self):
         if not self.redo_stack:
-            raise ValueError("Nothing to redo")
+            raise HTTPException(400, detail={"message":"Nothing to redo", "success":False})
         self.undo_stack.append((self.image.copy(), {k: v.copy() for k, v in self.layers.items()}))
         
         self.image, self.layers = self.redo_stack.pop()
@@ -135,4 +136,7 @@ def rgb_image_to_base64(img_rgb):
     return img_b64
 
 def convert_to_grayscale(img_rgb):
-    return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+    if len(img_rgb.shape) == 2:
+        img_rgb = np.stack([img_rgb] * 3, axis=-1)
+        
+    return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY) 
