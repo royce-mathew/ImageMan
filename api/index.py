@@ -113,6 +113,9 @@ async def download_image():
 @server_exception_handler(detail=f"Error in undo state:") 
 @validate_image
 async def undo():
+    """
+    undo an image to a previous state
+    """
     if image_store is not None:
         image_store.undo()
     return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
@@ -121,6 +124,9 @@ async def undo():
 @server_exception_handler(detail=f"Error in redo state:") 
 @validate_image
 async def redo():
+    """
+    redo an image to a previous state before undo
+    """
     if image_store is not None:
         image_store.redo()
     return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
