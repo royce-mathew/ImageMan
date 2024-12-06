@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Menubar,
   MenubarContent,
@@ -8,14 +10,13 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { Redo, Undo } from "lucide-react";
+import { Menu, Redo, Undo } from "lucide-react";
 import { useEffect } from "react";
 
 interface ImageMenuProps {
   onItemClick: (itemName: string) => void;
   states: {
-    "undo": number;
-    "redo": number;
+    [key: string]: number;
   };
 }
 
@@ -62,6 +63,27 @@ export function ImageMenu({ onItemClick, states }: ImageMenuProps) {
           <MenubarItem onClick={() => handleItemClick('Print')}>
             Print... <MenubarShortcut>⌘P</MenubarShortcut>
           </MenubarItem>
+          <MenubarSeparator />
+          <Dialog>
+            <DialogTrigger asChild>
+             <Button className="w-full">Properties</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Properties</DialogTitle>
+                <DialogDescription>View the properties of the image</DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col space-y-5">
+                <Label>
+                  Width: {states.width}
+                </Label>
+                <Label>
+                  Height: {states.height}
+                </Label>
+              </div>
+            </DialogContent>
+          </Dialog>
+         
         </MenubarContent>
       </MenubarMenu>
        
@@ -73,6 +95,9 @@ export function ImageMenu({ onItemClick, states }: ImageMenuProps) {
           <Redo />
         </Button>
       </MenubarMenu>
+      <div className="flex grow justify-end px-2">
+        {states.undo} changes
+      </div>
     </Menubar>
     </>
   );
