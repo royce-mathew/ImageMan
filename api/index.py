@@ -148,3 +148,28 @@ async def get_states():
         return {"states": image_store.get_states(), "success": True}
     else:
         return {"states": { "undo": 0, "redo": 0 }, "success": False}
+
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
+@app.post("/api/py/rotate")
+async def rotate_image(request: Request):
+    """
+    Rotates image by a certain angle
+
+    Request
+    {
+        angle: int (degrees)
+    }
+    """
+    body = await request.json()
+    angle = int(body.get("angle"))
+
+    if angle == 90:
+        rotated = rotate_image(image_store.image)
+    else:
+        rotated = rotate_image(image_store.image, angle)
+    
+    image_store.apply_changes(rotated)
+    rotated_b64 = image.rgb_image_to_base64(rotated)
+    
+    return {"image": rotated_b64, "success": True}
