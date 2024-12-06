@@ -217,6 +217,6 @@ async def gaussian_blur(request: Request):
     gauss_image = image.gaussian_blur(image_store.image, half_width)
 
     image_store.apply_changes(gauss_image)
-    gauss_b64 = image.rgb_image_to_base64(gauss_b64)
+    gauss_b64 = image.rgb_image_to_base64(gauss_image)
     
     return {"image": gauss_b64, "success": True}
