@@ -136,4 +136,7 @@ def rgb_image_to_base64(img_rgb):
     return img_b64
 
 def convert_to_grayscale(img_rgb):
-    return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+    if len(img_rgb.shape) == 2:
+        img_rgb = np.stack([img_rgb] * 3, axis=-1)
+        
+    return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY) 
