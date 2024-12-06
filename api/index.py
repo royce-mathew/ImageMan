@@ -198,3 +198,25 @@ async def white_balance(request: Request):
     wb_b64 = image.rgb_image_to_base64(wb_b64)
     
     return {"image": wb_b64, "success": True}
+
+@server_exception_handler(detail=f"Error processing image:")
+@validate_image
+@app.post("/api/py/gaussian")
+async def gaussian_blur(request: Request):
+    """
+    Blurs image with gaussian blur 
+
+    Request
+    {
+        half_width: int (0 to 15) it is the half width of the filter, affects how blurry the image will be
+    }
+    """
+    body = await request.json()
+    half_width = int(body.get("half_width"))
+
+    gauss_image = image.gaussian_blur(image_store.image, half_width)
+
+    image_store.apply_changes(gauss_image)
+    gauss_b64 = image.rgb_image_to_base64(gauss_b64)
+    
+    return {"image": gauss_b64, "success": True}
