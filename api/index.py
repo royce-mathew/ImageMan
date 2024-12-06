@@ -34,7 +34,10 @@ async def upload_image(request: Request):
 
         image_store = image.Image(img)
 
-        return {"success": True}
+        return {
+            "states": image_store.get_states(),
+            "success": True
+        }
 
 
 @server_exception_handler(detail=f"Error processing image:")
@@ -61,7 +64,7 @@ async def resize_image(request: Request):
     body = await request.json()
     height = int(body.get("height")) if body.get("height") else None
     width = int(body.get("width")) if body.get("width") else None
-    aspect_ratio = bool(body.get("aspect_ratio")) if body.get("aspect_ratio") else True
+    aspect_ratio = bool(body.get("aspectRatio")) if body.get("aspectRatio") else True
 
     if height is None and width is None:
         raise HTTPException(status_code=400, detail="Both width and height must be provided.")
@@ -147,7 +150,7 @@ async def get_states():
     if image_store is not None:
         return {"states": image_store.get_states(), "success": True}
     else:
-        return {"states": { "undo": 0, "redo": 0 }, "success": False}
+        return {"states": { "undo": 0, "redo": 0 , "height": 0, "width": 0}, "success": False}
 
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
@@ -164,10 +167,7 @@ async def rotate_image(request: Request):
     body = await request.json()
     angle = int(body.get("angle"))
 
-    if angle == 90:
-        rotated = image.rotate_image(image_store.image)
-    else:
-        rotated = image.rotate_image(image_store.image, angle)
+    rotated = image.rotate_image(image_store.image, angle)
     
     image_store.apply_changes(rotated)
     rotated_b64 = image.rgb_image_to_base64(rotated)
@@ -176,7 +176,7 @@ async def rotate_image(request: Request):
 
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
-@app.post("/api/py/white_balance")
+@app.post("/api/py/whitebalance")
 async def white_balance(request: Request):
     """
     Applies white balancing (white world or gray world)

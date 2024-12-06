@@ -74,8 +74,12 @@ class Image:
         self.image, self.layers = self.redo_stack.pop()
         
     def get_states(self):
-        print(self.redo_stack)
-        return {"undo": len(self.undo_stack), "redo": len(self.redo_stack)}
+        return {
+            "undo": len(self.undo_stack), 
+            "redo": len(self.redo_stack),
+            "height": self.image.shape[0],
+            "width": self.image.shape[1]
+        }
 
 def apply_selection(image, mask, function, *args, invert=False, **kwargs):
     mask = mask / 255
@@ -148,6 +152,7 @@ def convert_to_grayscale(img_rgb):
 
 def rotate_image(image, angle=90, center=None):
     (h, w) = image.shape[:2]
+    angle = -angle
 
     if center == None:
         center = (w // 2, h // 2)
