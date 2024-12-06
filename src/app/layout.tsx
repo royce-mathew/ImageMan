@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ModeToggle } from "@/lib/custom/mode-toggle";
 import { ThemeProvider } from "@/lib/custom/theme-provider";
 import Topbar from "@/lib/custom/topbar";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
         >
            <Topbar />
           {children}
+          <Toaster />
         </ThemeProvider>
         </body>
     </html>

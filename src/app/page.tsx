@@ -1,41 +1,123 @@
 "use client";
 
 import { ImageMenu } from "@/lib/custom/image-menu";
-import { ModeToggle } from "@/lib/custom/mode-toggle";
 import Image from "next/image";
-import { Input } from "@/components/ui/input"
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
 import { FileUploader } from "@/lib/custom/file-uploader";
 import Toolset from "@/lib/custom/toolset";
-import { on } from "events";
 
 
 export default function Home() {
   const [currentFile, setCurrentFile] = useState<File[]>([]);
   const [currentImage, setCurrentImage] = useState<File>();
+  const [states, setStates] = useState<{ undo: number; redo: number }>({
+    "undo": 0,
+    "redo": 0,
+  });
 
   // When the currentFile changes, update the currentImage
   useEffect(() => {
     if (currentFile.length > 0) {
-      console.log(currentFile[0]);
-      setCurrentImage(currentFile[0]);
+      setCurrentImage(currentFile[0])
+
+      // Convert to base64 image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result?.toString();
+        if (result) {
+          const base64Image = result.split(',')[1];
+          if (base64Image) {
+            // Upload the image to the server
+            fetch("/api/py/upload", {
+              method: 'POST',
+              cache: 'no-cache',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ image: base64Image }),
+            })
+            .then((response) => {
+              if (response.ok) {
+                console.log("File uploaded successfully");
+              } else {
+                console.error("Error uploading file:", response.statusText);
+              }
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+            });
+          }
+        }
+      };
+      reader.readAsDataURL(currentFile[0]);
     }
   }, [currentFile]);
 
 
-  function onCommandRan(command: string, base64Image: string, params?: {}) {
-    console.log("Command ran:", command);
+  // Fetch the states from the server
+  useEffect(() => {
+    fetch("/api/py/states", {
+      method: 'GET',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => {
+      if (response.ok) {
+        response.json().then((data) => {
+          setStates(data.states);
+        }).catch((error) => {
+          console.error("Error parsing JSON response:", error);
+        });
+      } else {
+        console.error("Error fetching states:", response.statusText);
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  }, [currentImage]);
+
+  function onCommandRan(command: string, base64Image?: string, params?: {}) {
+    // Other Image functions
     if (command === "Grayscale") {
-      fetch("http://localhost:5000/grayscale", {
+      fetch("/api/py/grayscale", {
         method: 'POST',
+        cache: 'no-cache',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image: base64Image }),
+      })
+      .then(setImageOnResponse)
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+
+    // Undo last action
+    } else if (command === "Undo") {
+      console.log("Undoing last action");
+      fetch("/api/py/undo", {
+        method: 'POST',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(setImageOnResponse)
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+
+    // Redo last action
+    } else if (command === "Redo") {
+      console.log("Redoing last action");
+      fetch("/api/py/redo", {
+        method: 'POST',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
       .then(setImageOnResponse)
       .catch((error) => {
@@ -48,6 +130,7 @@ export default function Home() {
   function setImageOnResponse(response: Response) {
     if (response.ok) {
       response.json().then((data) => {
+        console.log("Response:", data);
         const base64Image = data.image;
         const byteCharacters = atob(base64Image);
         const byteNumbers = new Array(byteCharacters.length);
@@ -66,24 +149,6 @@ export default function Home() {
     }
   }
 
-
-  function onButtonPressed(buttonName: string, params?: {}) {
-    if (!currentImage) return;
-    // Convert to base64 image
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result?.toString();
-      if (result) {
-        const base64Image = result.split(',')[1];
-        if (base64Image) {
-          onCommandRan(buttonName, base64Image, params);
-        }
-      }
-    };
-    // When the file is read, set the current image to the file
-    reader.readAsDataURL(currentImage);
-  }
-
   
 
   // useEffect(() => {
@@ -95,9 +160,9 @@ export default function Home() {
       {/* Canvas */}
       <div className="flex w-full py-10 px-10 justify-center">
         <div className="w-[2000px]">
-          <ImageMenu />
+          <ImageMenu onItemClick={onCommandRan} states={states}/>
           <div className="bg-foreground/10 mx-3 py-2 px-2 flex flex-row justify-between space-x-3">
-            <Toolset onButtonPressed={onButtonPressed} />
+            <Toolset onButtonPressed={onCommandRan} />
             <div className="flex-1">
               {currentImage ? (
                 <Image
