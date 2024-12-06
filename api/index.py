@@ -195,6 +195,6 @@ async def white_balance(request: Request):
         wb_image = image.white_balance(image_store.image)
     
     image_store.apply_changes(wb_image)
-    wb_b64 = image.rgb_image_to_base64(wb_b64)
+    wb_b64 = image.rgb_image_to_base64(wb_image)
     
     return {"image": wb_b64, "success": True}
