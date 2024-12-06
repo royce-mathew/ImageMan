@@ -4,6 +4,7 @@ import numpy as np
 from base64 import b64decode, b64encode
 import matplotlib.pyplot as plt
 from fastapi import HTTPException
+from scipy.signal import convolve2d
 
 class Image:
     def __init__(self, numpy_array, layers=None):
@@ -194,6 +195,42 @@ def white_balance(image,mode='gray'):
 
     return cv2.convertScaleAbs(image)
 
-def gaussian_blur():
+def gaussian_blur(image, half_width):
+    gauss_filter = create_gaussian_filter(half_width)
+
+    for i in range(3):
+        image[:,:,i] = convolve2d(image[:,:,i],gauss_filter,mode="same")
+
+    return cv2.convertScaleAbs(image)
+
+def create_gaussian_filter(half_width) -> np.ndarray:
+    filter_width = 2 * half_width + 1
+    s = filter_width // 2
+    x = np.linspace(-s, s, filter_width)
+    y = np.linspace(-s, s, filter_width)
+    xc, yc = np.meshgrid(x, y)
+    gaussian_filter = create_gaussian_xy(xc, yc, half_width)
+    normalized = gaussian_filter / np.sum(gaussian_filter) # normalize the filter
+
+    return normalized
+
+def create_gaussian_xy(xc, yc, half_width):
+    sigma = (1/3) * half_width 
+    x_gauss = g(xc, sigma)
+    y_gauss = g(yc, sigma)
+
+    return x_gauss * y_gauss
+
+def g(x_or_y, sigma):
+    input = -1 * ((x_or_y ** 2)/(2 * sigma ** 2))
+    const = 1 / (np.sqrt(2 * np.pi) * sigma)
+    return const * np.exp(input)
+
+def adjust_saturation():
     pass
 
+def change_contrast():
+    pass
+
+def change_color_temperature():
+    pass
