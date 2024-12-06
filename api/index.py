@@ -11,32 +11,30 @@ image_store = None
 def hello_fast_api():
     return {"message": "Hello from FastAPI"}
 
-
+@server_exception_handler(detail="Error uploading image to server:")
 @app.post("/api/py/upload")
-@server_exception_handler(status_code=400,detail=f"Error uploading image to the server:")
 async def upload_image(request: Request):
-    """
-    Uploads image to backend and puts it in image store
-    Request object
-    {
-        image: base64
-    }
-    Response object
-    {
-        success: True
-    }
-    """
-    global image_store
-    body = await request.json()
+        """
+        Uploads image to backend and puts it in image store
+        Request object
+        {
+            image: base64
+        }
+        Response object
+        {
+            success: True
+        }
+        """
+        global image_store
+        body = await request.json()
 
-    b64 = body.get("image")
+        b64 = body.get("image")
 
-    img = image.base64_to_rgb_image(b64)
+        img = image.base64_to_rgb_image(b64)
 
-    image_store = image.Image(img)
+        image_store = image.Image(img)
 
-    return {"success": True}
-
+        return {"success": True}
 
 @app.post("/api/py/resize")
 @server_exception_handler(detail=f"Error processing image:")
@@ -79,9 +77,9 @@ async def resize_image(request: Request):
     return {"image": new_img_b64, "success": True}
 
 
-@app.get("/api/py/grayscale")
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
+@app.get("/api/py/grayscale")
 async def make_grayscale():
     """
     Convert image to grayscale
