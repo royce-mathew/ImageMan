@@ -107,6 +107,9 @@ async def make_grayscale():
 @validate_image
 @app.get("/api/py/download")
 async def download_image():
+    """
+    downloads the current image on the backend
+    """
     return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
 
 
