@@ -53,11 +53,13 @@ async def resize_image(request: Request):
     response object
 
     {
-    image: base64
-    success: True
+    image: base64 or null,
+    success: Bool
     }
     """
     try:
+        if image_store.image is None:
+            return {"success":False, "image": None}
         body = await request.json()
         # image_b64 = body.get("image")
         height = int(body.get("height")) if body.get("height") else None
@@ -78,39 +80,44 @@ async def resize_image(request: Request):
         image_store.apply_changes(new_img)
         new_img_b64 = image.rgb_image_to_base64(new_img)
 
-        return {"image": new_img_b64}
+        return {"image": new_img_b64, "success": True}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
-@app.post("/api/py/grayscale")
-async def make_grayscale(request: Request):
+@app.get("/api/py/grayscale")
+async def make_grayscale():
     """
-    Expects request object
-    {
-        "image": base64
-    }
-
     Convert image to grayscale
 
     returns response
     {
-        "image": base64
+        "image": base64 or null,
+        "success": bool
     }
     """
+    if image_store is None:
+        return {"success": False, "image": "None"}
+
     try:
-
-        # body = await request.json()
-        # image_b64 = body.get("image")
-       
-        # img = image.base64_to_rgb_image(image_b64)
-
+        image.plt.imshow(image_store.image)
+        image.plt.show()
         new_img = image.convert_to_grayscale(image_store.image)
-        
+        image.plt.imshow(new_img)
+        image.plt.show()
         image_store.apply_changes(new_img)
         new_img_b64 = image.rgb_image_to_base64(new_img)
 
-        return {"image": new_img_b64}
+        return {"image": new_img_b64, "success": True}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
+@app.get("/api/py/download")
+async def download_image():
+    if image_store is None:
+        return {"success": False, "image": "None"}
+    try:
+        return {"image": image.rgb_image_to_base64(image_store.image), "success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500,detail=f"Error uploading image to the server: {str(e)}")
