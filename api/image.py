@@ -144,3 +144,42 @@ def convert_to_grayscale(img_rgb):
         img_rgb = np.stack([img_rgb] * 3, axis=-1)
         
     return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY) 
+
+def rotate_image():
+    pass
+
+def white_balance(image,mode='gray'):
+    if "white" == mode:
+        image = image.astype(np.float32)
+        max_r = np.amax(image[:,:,0])
+        max_g = np.amax(image[:,:,1])
+        max_b = np.amax(image[:,:,2])
+
+        scale_r = max_g / max_r
+        scale_g = 1
+        scale_b = max_g / max_b
+
+        image[:,:,0] *= scale_r
+        image[:,:,1] *= scale_g
+        image[:,:,2] *= scale_b
+
+        return cv2.convertScaleAbs(image)
+        
+    image = image.astype(np.float32)
+    avg_r = np.mean(image[:,:,0])
+    avg_g = np.mean(image[:,:,1])
+    avg_b = np.mean(image[:,:,2])
+
+    scale_r = avg_g / avg_r
+    scale_g = 1
+    scale_b = avg_g / avg_b
+
+    image[:,:,0] *= scale_r
+    image[:,:,1] *= scale_g
+    image[:,:,2] *= scale_b
+
+    return cv2.convertScaleAbs(image)
+
+def gaussian_blur():
+    pass
+
