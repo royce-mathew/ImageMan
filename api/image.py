@@ -49,7 +49,7 @@ class Image:
     
     def _save_state(self):
         state = (self.image.copy(), {k: v.copy() for k, v in self.layers.items()})
-        self.undo_stack(state)
+        self.undo_stack.append(state)
     
     def apply_changes(self, new_image):
         if not isinstance(new_image, np.ndarray):
