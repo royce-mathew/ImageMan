@@ -145,10 +145,9 @@ def rgb_image_to_base64(img_rgb):
     return img_b64
 
 def convert_to_grayscale(img_rgb):
-    if len(img_rgb.shape) == 2:
-        img_rgb = np.stack([img_rgb] * 3, axis=-1)
-        
-    return cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY) 
+    gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+    gray_rgb = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+    return gray_rgb
 
 
 def rotate_image(image, angle=90, center=None):
@@ -197,11 +196,12 @@ def white_balance(image,mode='gray'):
 
 def gaussian_blur(image, half_width):
     gauss_filter = create_gaussian_filter(half_width)
+    blurred_image = np.zeros_like(image)
 
     for i in range(3):
-        image[:,:,i] = convolve2d(image[:,:,i],gauss_filter,mode="same")
+        blurred_image[:, :, i] = convolve2d(image[:, :, i], gauss_filter, mode="same", boundary='symm')
 
-    return cv2.convertScaleAbs(image)
+    return cv2.convertScaleAbs(blurred_image)
 
 def create_gaussian_filter(half_width) -> np.ndarray:
     filter_width = 2 * half_width + 1
@@ -229,8 +229,8 @@ def g(x_or_y, sigma):
 
 def adjust_saturation(image_rgb, saturation_value):
     image_hsv = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2HSV).astype(np.float32)
-    image_hsv[:,:,1] = image_hsv[:,:,1].astype(np.int16) + saturation_value
-    image_rgb = cv2.cvtColor(cv2.convertScaleAbs(image_hsv),cv2.COLOR_HSV2RGB)
+    image_hsv[:,:,1] = np.clip(image_hsv[:,:,1].astype(np.int16) + saturation_value, 0, 255)
+    image_rgb = cv2.cvtColor(cv2.convertScaleAbs(image_hsv), cv2.COLOR_HSV2RGB)
     
     return image_rgb
 
@@ -264,13 +264,5 @@ def make_sepia(image):
     return cv2.convertScaleAbs(sepia)
 
 def make_ghost(image): # very cool filter, inverts sepia to create a ghostly image
-    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    gray = gray.astype(np.float32) / 255
-
-    ghost = np.ones_like(image,dtype=np.float32)
-
-    ghost[:,:,0] *= 255 * gray
-    ghost[:,:,1] *= 204 * gray
-    ghost[:,:,2] *= 153 * gray
-
-    return cv2.convertScaleAbs(ghost)
+    inverted_image = cv2.bitwise_not(image)
+    return inverted_image

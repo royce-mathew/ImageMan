@@ -5,8 +5,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FileUploader } from "@/lib/custom/file-uploader";
 import Toolset from "@/lib/custom/toolset";
+import { toast } from "sonner";
 
-const validCommands = ["undo", "redo", "grayscale", "rotate", "crop", "whitebalance", "resize"];
+const validCommands = ["undo", "redo", "grayscale", "rotate", "crop", "whitebalance", "resize", "filter", "blur", "contrast", "saturation", "tone", "download"];
 
 
 export default function Home() {
@@ -90,6 +91,15 @@ export default function Home() {
 
   function onCommandRan(command: string, params?: {}) {
     if (!validCommands.includes(command.toLowerCase())) return;
+    if (command.toLowerCase() === "download") {
+      const a = document.createElement('a');
+      if (currentImage) {
+        a.href = URL.createObjectURL(currentImage);
+      }
+      a.download = 'image.png';
+      a.click();
+      return;
+    }
     console.log(`Running command ${command} with params:`, params);
     fetch(`/api/py/${command.toLowerCase()}`, {
       method: 'POST',
@@ -127,12 +137,6 @@ export default function Home() {
       console.error(`Error in ${response.url}:`, response.statusText);
     }
   }
-
-  
-
-  // useEffect(() => {
-  //   setCurrentImage("/next.svg");
-  // }, []); // Add an empty dependency array to run this effect only once
 
   return (
     <main>

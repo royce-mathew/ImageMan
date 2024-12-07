@@ -215,7 +215,7 @@ async def white_balance(request: Request):
 
 @server_exception_handler(detail=f"Error processing image:")
 @validate_image
-@app.post("/api/py/gaussian")
+@app.post("/api/py/blur")
 async def gaussian_blur(request: Request):
     """
     Blurs image with gaussian blur 
@@ -244,11 +244,11 @@ async def adjust_saturation(request: Request):
 
     Request
     {
-        saturation_value: int (-25,25)
+        amount: int (-100,100)
     }
     """
     body = await request.json()
-    saturation_value = int(body.get("saturation_value"))
+    saturation_value = int(body.get("amount"))
 
     saturated_image = image.adjust_saturation(image_store.image, saturation_value)
 
@@ -266,11 +266,11 @@ async def change_contrast(request: Request):
 
     Request
     {
-        contrast_value: int (0 to 50)
+        amount: int (0 to 50)
     }
     """
     body = await request.json()
-    constrast_val = int(body.get("constrast_value"))
+    constrast_val = int(body.get("amount"))
 
     constrast_image = image.change_contrast(image_store.image, constrast_val)
 
@@ -288,11 +288,11 @@ async def change_tone(request: Request):
 
     Request
     {
-        tone_value: int (-50, 50) 0 will not change tone
+        amount: int (-50, 50) 0 will not change tone
     }
     """
     body = await request.json()
-    tone_value = int(body.get("tone_value"))
+    tone_value = int(body.get("amount"))
 
     tone_image = image.change_tone(image_store.image, tone_value)
 

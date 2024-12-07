@@ -32,6 +32,9 @@ export function ImageMenu({ onItemClick, states }: ImageMenuProps) {
       if (event.key === 't') {
         event.preventDefault();
         handleItemClick('New Image');
+      } else if (event.key === 's') {
+        event.preventDefault();
+        handleItemClick('Download');
       }
       if (event.metaKey === false && event.ctrlKey === false) return;
       if (event.key === 'p') {
@@ -62,6 +65,9 @@ export function ImageMenu({ onItemClick, states }: ImageMenuProps) {
           <MenubarSeparator />
           <MenubarItem onClick={() => handleItemClick('Print')}>
             Print... <MenubarShortcut>⌘P</MenubarShortcut>
+          </MenubarItem>
+          <MenubarItem onClick={() => handleItemClick('Download')}>
+            Download <MenubarShortcut>S</MenubarShortcut>
           </MenubarItem>
           <MenubarSeparator />
           <Dialog>
