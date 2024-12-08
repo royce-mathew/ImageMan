@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 # from PIL import Image
 from base64 import b64decode, b64encode
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from fastapi import HTTPException
 from scipy.signal import convolve2d
 
@@ -104,22 +104,26 @@ def resize_image(image, width=None, height=None, aspect_ratio=True, interpolatio
     
     new_size = None
     img_h, img_w = image.shape[:2]
+    print(img_h)
+    print(height)
 
     if aspect_ratio:
-        if  width:
+        if  height is img_h:
             scale_h = width / img_w
-            new_size = (int(scale_h * img_h), width)
+            print(scale_h)
+            new_size = (width, int(scale_h * img_h))
         else:
             scale_w = height / img_h
-            new_size =  (height,(int(scale_w * img_w)))
+            new_size =  ((int(scale_w * img_w)),height)
     else:
         if width is None:  
-            new_size = (height, img_w)
+            new_size = (img_w, height)
         elif height is None:
-            new_size = (img_h, width)
+            new_size = (width, img_h)
         else:
-            new_size = (height, width)
-    
+            new_size = (width, height)
+    print("new size is")
+    print(new_size)
     return cv2.resize(image, new_size, interpolation=interpolation) 
 
 def base64_to_rgb_image(b64):
