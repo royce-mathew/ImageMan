@@ -66,21 +66,14 @@ async def resize_image(request: Request):
     width = int(body.get("width")) if body.get("width") else None
     aspect_ratio = bool(body.get("aspectRatio")) if body.get("aspectRatio") else True
 
-    print(f"height is {height}")
-    print(f"width is {width}")
-    print(f"aspect ratio is {aspect_ratio}")
 
     if height is None and width is None:
-        print("case 0")
         raise HTTPException(status_code=400, detail="Both width and height must be provided.")
     if height is None:
-        print("case 1")
         new_img = image.resize_image(image_store.image,width=width,aspect_ratio=aspect_ratio)
     if width is None:
-        print("case 2")
         new_img = image.resize_image(image_store.image,height=height,aspect_ratio=aspect_ratio)
     else:
-        print("case 3")
         new_img = image.resize_image(image_store.image,width=width,height=height,aspect_ratio=aspect_ratio)
     
     image_store.apply_changes(new_img)

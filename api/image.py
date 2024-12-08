@@ -104,11 +104,9 @@ def resize_image(image, width=None, height=None, aspect_ratio=True, interpolatio
     
     new_size = None
     img_h, img_w = image.shape[:2]
-    print(img_h)
-    print(height)
 
     if aspect_ratio:
-        if  height is img_h:
+        if  height == img_h:
             scale_h = width / img_w
             print(scale_h)
             new_size = (width, int(scale_h * img_h))
@@ -122,8 +120,7 @@ def resize_image(image, width=None, height=None, aspect_ratio=True, interpolatio
             new_size = (width, img_h)
         else:
             new_size = (width, height)
-    print("new size is")
-    print(new_size)
+
     return cv2.resize(image, new_size, interpolation=interpolation) 
 
 def base64_to_rgb_image(b64):
